@@ -1,49 +1,35 @@
 import {combineReducers, createStore} from "redux";
 
-const reducer = function(state, action) {
-  if (action.type === "INC") {
-    return state + action.number;
-  }
-  if (action.type === "DEC") {
-    return state - action.number;
+
+const userReducer = (state={}, action) => {
+  switch (action.type) {
+    case "CHANGE_NAME": {
+      state = {...state, name: action.playload}
+      break;
+    }
+    case "CHANGE_AGE": {
+      state = {...state, age: action.playload}
+      break;
+    }
   }
   return state;
-}
-
-const userReducer = (state, action) => {
-
 };
 
-const tweetsReducer = (state, action) => {
-
+const tweetsReducer = (state=[], action) => {
+  return state;
 };
 
 const reducers = combineReducers({
-  user: userReducer
+  user: userReducer, 
+  tweet: tweetsReducer
 })
 
 
-/*
-
-{
-  user: {
-    name: "shihao", 
-    age: 29,
-  },
-  tweets: []
-}
-*/
-const store = createStore(reducer, 0);
+const store = createStore(reducers);
 
 store.subscribe(() => {
   console.log("store changed", store.getState())
 })
 
-store.dispatch({type: "INC", number: 1});
-store.dispatch({type: "INC", number: 1});
-store.dispatch({type: "INC", number: 1});
-store.dispatch({type: "INC", number: 1});
-store.dispatch({type: "INC", number: 1});
-store.dispatch({type: "DEC", number: 1});
-store.dispatch({type: "DEC", number: 1});
-store.dispatch({type: "DEC", number: 1});
+store.dispatch({type: "CHANGE_NAME", playload: "Shihao"});
+store.dispatch({type: "CHANGE_AGE", playload: 29});
