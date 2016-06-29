@@ -1,48 +1,52 @@
 import {applyMiddleware, createStore} from "redux";
+import logger from "redux-logger";
+import thunk from "redux-thunk";
+import axios from "axios";
+
+const initialState = {
+  featching: false,
+  fetched: false, 
+  users: [], 
+  error: null,
+}
 
 
-const reducer = (initialState = 0, action) => {
-  if (action.type === "INC") {
-    return initialState + 1;
-  } else if (action.type === "DEC") {
-    return initialState - 1;
-  } else if (action.type === "E") {
-    throw new Error("Shihao!!!!");
+const reducer = (state=initialState, action) => {
+  switch (action.type) {
+    case "FETCH_USERS_STAR": {
+      return {...state, fetching: true}
+      break;
+    }
+    case "FETCH_USERS_ERROR": {
+      return {...FETCH_USERS_ERROR, fetching: false, error: action.payload}
+      break;
+    }
+    case "RECEIVE_USERS": {
+      return {
+        ...state,
+        fetching: false,
+        fetched: true,
+        users: action.payload,
+      }
+      break;
+    }
   }
-  return initialState;
+  return state
 }
 
-const logger = (store) => (next) => (action) => {
-  console.log("action fired", action);
-  // debugger;
-  next(action);
-}
+const middleware = applyMiddleware(thunk, logger());
 
-const error = (store) => (next) => (action) => {
-  try {
-    next(action);
-  } catch (e) {
-    console.log("AHHHHHH!", e);
-  }
-}
-
-const middleware = applyMiddleware(logger, error);
-
-const store = createStore(reducer, 100, middleware);
-
-store.subscribe(() => {
-  console.log("store changed", store.getState())
-})
+const store = createStore(reducer, middleware);
 
 
-store.dispatch({type: "INC"});
-store.dispatch({type: "INC"});
-store.dispatch({type: "INC"});
-store.dispatch({type: "INC"});
-store.dispatch({type: "INC"});
-store.dispatch({type: "DEC"});
-store.dispatch({type: "DEC"});
-store.dispatch({type: "DEC"});
-store.dispatch({type: "E"});
 
-
+store.dispatch((dispatch) => {
+  dispatch({type: "FETCH_USERS_STAR"})
+  axios.get("http://rest.learncode.academy/api/wstern/users")
+  .then((response) => {
+    dispatch({type: "RECEIVE_USERS", playload: response.data})
+  })
+  .catch((err) => {
+    dispatch({type: "FETCH_USERS_ERROR", playload: err})
+  })
+});
